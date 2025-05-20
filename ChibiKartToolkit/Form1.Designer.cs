@@ -21,130 +21,202 @@ namespace ChibiKartToolkit
 
         private void InitializeComponent()
         {
-            this.MenuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ExportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.PAKToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ImportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.MiscToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.XORTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.DecryptStringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnStartServer = new System.Windows.Forms.Button();
-            this.lbxMessages = new System.Windows.Forms.ListBox();
-            this.ofdInputPAK = new System.Windows.Forms.OpenFileDialog();
-            this.btnStartWebServer = new System.Windows.Forms.Button();
-            this.MenuStrip1.SuspendLayout();
-            this.SuspendLayout();
-
+            MenuStrip1 = new MenuStrip();
+            FileToolStripMenuItem = new ToolStripMenuItem();
+            AboutToolStripMenuItem = new ToolStripMenuItem();
+            ExportToolStripMenuItem = new ToolStripMenuItem();
+            PAKToolStripMenuItem = new ToolStripMenuItem();
+            ImportToolStripMenuItem = new ToolStripMenuItem();
+            MiscToolStripMenuItem = new ToolStripMenuItem();
+            XORTestToolStripMenuItem = new ToolStripMenuItem();
+            DecryptStringToolStripMenuItem = new ToolStripMenuItem();
+            packetToolStripMenuItem = new ToolStripMenuItem();
+            ToolStripMenuItemInspectXML = new ToolStripMenuItem();
+            btnStartServer = new Button();
+            lbxMessages = new ListBox();
+            ofdInputPAK = new OpenFileDialog();
+            btnStartWebServer = new Button();
+            BtnLaunchChibiKart = new Button();
+            label1 = new Label();
+            linkLabel1 = new LinkLabel();
+            btnServerSettings = new Button();
+            MenuStrip1.SuspendLayout();
+            SuspendLayout();
+            // 
             // MenuStrip1
-            this.MenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.FileToolStripMenuItem,
-            this.ExportToolStripMenuItem,
-            this.ImportToolStripMenuItem,
-            this.MiscToolStripMenuItem});
-            this.MenuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.MenuStrip1.Name = "MenuStrip1";
-            this.MenuStrip1.Size = new System.Drawing.Size(800, 24);
-            this.MenuStrip1.TabIndex = 0;
-            this.MenuStrip1.Text = "menuStrip1";
-
+            // 
+            MenuStrip1.Items.AddRange(new ToolStripItem[] { FileToolStripMenuItem, ExportToolStripMenuItem, ImportToolStripMenuItem, MiscToolStripMenuItem, packetToolStripMenuItem });
+            MenuStrip1.Location = new Point(0, 0);
+            MenuStrip1.Name = "MenuStrip1";
+            MenuStrip1.Size = new Size(800, 24);
+            MenuStrip1.TabIndex = 0;
+            MenuStrip1.Text = "menuStrip1";
+            // 
             // FileToolStripMenuItem
-            this.FileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.AboutToolStripMenuItem});
-            this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
-            this.FileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            this.FileToolStripMenuItem.Text = "File";
-
+            // 
+            FileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { AboutToolStripMenuItem });
+            FileToolStripMenuItem.Name = "FileToolStripMenuItem";
+            FileToolStripMenuItem.Size = new Size(37, 20);
+            FileToolStripMenuItem.Text = "File";
+            // 
             // AboutToolStripMenuItem
-            this.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
-            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.AboutToolStripMenuItem.Text = "About";
-            this.AboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
-
+            // 
+            AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
+            AboutToolStripMenuItem.Size = new Size(107, 22);
+            AboutToolStripMenuItem.Text = "About";
+            AboutToolStripMenuItem.Click += AboutToolStripMenuItem_Click;
+            // 
             // ExportToolStripMenuItem
-            this.ExportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.PAKToolStripMenuItem});
-            this.ExportToolStripMenuItem.Name = "ExportToolStripMenuItem";
-            this.ExportToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
-            this.ExportToolStripMenuItem.Text = "Export";
-
+            // 
+            ExportToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { PAKToolStripMenuItem });
+            ExportToolStripMenuItem.Name = "ExportToolStripMenuItem";
+            ExportToolStripMenuItem.Size = new Size(53, 20);
+            ExportToolStripMenuItem.Text = "Export";
+            // 
             // PAKToolStripMenuItem
-            this.PAKToolStripMenuItem.Name = "PAKToolStripMenuItem";
-            this.PAKToolStripMenuItem.Size = new System.Drawing.Size(95, 22);
-            this.PAKToolStripMenuItem.Text = "PAK";
-            this.PAKToolStripMenuItem.Click += new System.EventHandler(this.PAKToolStripMenuItem_Click);
-
+            // 
+            PAKToolStripMenuItem.Name = "PAKToolStripMenuItem";
+            PAKToolStripMenuItem.Size = new Size(95, 22);
+            PAKToolStripMenuItem.Text = "PAK";
+            PAKToolStripMenuItem.Click += PAKToolStripMenuItem_Click;
+            // 
             // ImportToolStripMenuItem
-            this.ImportToolStripMenuItem.Name = "ImportToolStripMenuItem";
-            this.ImportToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
-            this.ImportToolStripMenuItem.Text = "Import";
-
+            // 
+            ImportToolStripMenuItem.Name = "ImportToolStripMenuItem";
+            ImportToolStripMenuItem.Size = new Size(55, 20);
+            ImportToolStripMenuItem.Text = "Import";
+            // 
             // MiscToolStripMenuItem
-            this.MiscToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.XORTestToolStripMenuItem,
-            this.DecryptStringToolStripMenuItem});
-            this.MiscToolStripMenuItem.Name = "MiscToolStripMenuItem";
-            this.MiscToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.MiscToolStripMenuItem.Text = "Misc";
-
+            // 
+            MiscToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { XORTestToolStripMenuItem, DecryptStringToolStripMenuItem });
+            MiscToolStripMenuItem.Name = "MiscToolStripMenuItem";
+            MiscToolStripMenuItem.Size = new Size(44, 20);
+            MiscToolStripMenuItem.Text = "Misc";
+            // 
             // XORTestToolStripMenuItem
-            this.XORTestToolStripMenuItem.Name = "XORTestToolStripMenuItem";
-            this.XORTestToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
-            this.XORTestToolStripMenuItem.Text = "XOR Test";
-            this.XORTestToolStripMenuItem.Click += new System.EventHandler(this.XORTestToolStripMenuItem_Click);
-
+            // 
+            XORTestToolStripMenuItem.Name = "XORTestToolStripMenuItem";
+            XORTestToolStripMenuItem.Size = new Size(146, 22);
+            XORTestToolStripMenuItem.Text = "XOR Test";
+            XORTestToolStripMenuItem.Click += XORTestToolStripMenuItem_Click;
+            // 
             // DecryptStringToolStripMenuItem
-            this.DecryptStringToolStripMenuItem.Name = "DecryptStringToolStripMenuItem";
-            this.DecryptStringToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
-            this.DecryptStringToolStripMenuItem.Text = "DecryptString";
-            this.DecryptStringToolStripMenuItem.Click += new System.EventHandler(this.DecryptStringToolStripMenuItem_Click);
-
+            // 
+            DecryptStringToolStripMenuItem.Name = "DecryptStringToolStripMenuItem";
+            DecryptStringToolStripMenuItem.Size = new Size(146, 22);
+            DecryptStringToolStripMenuItem.Text = "DecryptString";
+            DecryptStringToolStripMenuItem.Click += DecryptStringToolStripMenuItem_Click;
+            // 
+            // packetToolStripMenuItem
+            // 
+            packetToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { ToolStripMenuItemInspectXML });
+            packetToolStripMenuItem.Name = "packetToolStripMenuItem";
+            packetToolStripMenuItem.Size = new Size(54, 20);
+            packetToolStripMenuItem.Text = "Packet";
+            // 
+            // ToolStripMenuItemInspectXML
+            // 
+            ToolStripMenuItemInspectXML.Name = "ToolStripMenuItemInspectXML";
+            ToolStripMenuItemInspectXML.Size = new Size(112, 22);
+            ToolStripMenuItemInspectXML.Text = "Inspect";
+            ToolStripMenuItemInspectXML.Click += ToolStripMenuItemInspectXML_Click;
+            // 
             // btnStartServer
-            this.btnStartServer.Location = new System.Drawing.Point(12, 27);
-            this.btnStartServer.Name = "btnStartServer";
-            this.btnStartServer.Size = new System.Drawing.Size(126, 34);
-            this.btnStartServer.TabIndex = 1;
-            this.btnStartServer.Text = "Start Game Server";
-            this.btnStartServer.UseVisualStyleBackColor = true;
-            this.btnStartServer.Click += new System.EventHandler(this.btnStartServer_Click);
-
+            // 
+            btnStartServer.Location = new Point(12, 27);
+            btnStartServer.Name = "btnStartServer";
+            btnStartServer.Size = new Size(152, 34);
+            btnStartServer.TabIndex = 1;
+            btnStartServer.Text = "Start Game Server";
+            btnStartServer.UseVisualStyleBackColor = true;
+            btnStartServer.Click += btnStartServer_Click;
+            // 
             // lbxMessages
-            this.lbxMessages.FormattingEnabled = true;
-            this.lbxMessages.ItemHeight = 15;
-            this.lbxMessages.Location = new System.Drawing.Point(12, 77);
-            this.lbxMessages.Name = "lbxMessages";
-            this.lbxMessages.Size = new System.Drawing.Size(776, 364);
-            this.lbxMessages.TabIndex = 2;
-
+            // 
+            lbxMessages.FormattingEnabled = true;
+            lbxMessages.ItemHeight = 15;
+            lbxMessages.Location = new Point(12, 95);
+            lbxMessages.Name = "lbxMessages";
+            lbxMessages.Size = new Size(776, 364);
+            lbxMessages.TabIndex = 2;
+            // 
             // ofdInputPAK
-            this.ofdInputPAK.FileName = "OpenFileDialog1";
-
+            // 
+            ofdInputPAK.FileName = "OpenFileDialog1";
+            // 
             // btnStartWebServer
-            this.btnStartWebServer.Location = new System.Drawing.Point(204, 27);
-            this.btnStartWebServer.Name = "btnStartWebServer";
-            this.btnStartWebServer.Size = new System.Drawing.Size(157, 34);
-            this.btnStartWebServer.TabIndex = 3;
-            this.btnStartWebServer.Text = "Start Web Server";
-            this.btnStartWebServer.UseVisualStyleBackColor = true;
-            this.btnStartWebServer.Click += new System.EventHandler(this.btnStartWebServer_Click);
-
+            // 
+            btnStartWebServer.Location = new Point(204, 27);
+            btnStartWebServer.Name = "btnStartWebServer";
+            btnStartWebServer.Size = new Size(157, 34);
+            btnStartWebServer.TabIndex = 3;
+            btnStartWebServer.Text = "Start Web Server";
+            btnStartWebServer.UseVisualStyleBackColor = true;
+            btnStartWebServer.Click += btnStartWebServer_Click;
+            // 
+            // BtnLaunchChibiKart
+            // 
+            BtnLaunchChibiKart.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            BtnLaunchChibiKart.Location = new Point(521, 24);
+            BtnLaunchChibiKart.Name = "BtnLaunchChibiKart";
+            BtnLaunchChibiKart.Size = new Size(149, 37);
+            BtnLaunchChibiKart.TabIndex = 4;
+            BtnLaunchChibiKart.Text = "Launch Chibi Kart";
+            BtnLaunchChibiKart.UseVisualStyleBackColor = true;
+            BtnLaunchChibiKart.Click += BtnLaunchChibiKart_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 8F, FontStyle.Italic);
+            label1.Location = new Point(678, 37);
+            label1.Name = "label1";
+            label1.Size = new Size(85, 13);
+            label1.TabIndex = 5;
+            label1.Text = "hardcoded value";
+            // 
+            // linkLabel1
+            // 
+            linkLabel1.AutoSize = true;
+            linkLabel1.Location = new Point(16, 68);
+            linkLabel1.Name = "linkLabel1";
+            linkLabel1.Size = new Size(117, 15);
+            linkLabel1.TabIndex = 6;
+            linkLabel1.TabStop = true;
+            linkLabel1.Text = "Show Responses.xml";
+            linkLabel1.LinkClicked += linkLabel1_ShowResponsesXML;
+            // 
+            // btnServerSettings
+            // 
+            btnServerSettings.Location = new Point(383, 49);
+            btnServerSettings.Name = "btnServerSettings";
+            btnServerSettings.Size = new Size(112, 25);
+            btnServerSettings.TabIndex = 7;
+            btnServerSettings.Text = "Server Settings";
+            btnServerSettings.UseVisualStyleBackColor = true;
+            btnServerSettings.Click += btnServerSettings_Click;
+            // 
             // Form1
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 455);
-            this.Controls.Add(this.btnStartWebServer);
-            this.Controls.Add(this.lbxMessages);
-            this.Controls.Add(this.btnStartServer);
-            this.Controls.Add(this.MenuStrip1);
-            this.MainMenuStrip = this.MenuStrip1;
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-            this.MenuStrip1.ResumeLayout(false);
-            this.MenuStrip1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 471);
+            Controls.Add(btnServerSettings);
+            Controls.Add(linkLabel1);
+            Controls.Add(label1);
+            Controls.Add(BtnLaunchChibiKart);
+            Controls.Add(btnStartWebServer);
+            Controls.Add(lbxMessages);
+            Controls.Add(btnStartServer);
+            Controls.Add(MenuStrip1);
+            MainMenuStrip = MenuStrip1;
+            Name = "Form1";
+            Text = "Chibi Kart Tool";
+            FormClosing += Form1_FormClosing;
+            MenuStrip1.ResumeLayout(false);
+            MenuStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -162,5 +234,11 @@ namespace ChibiKartToolkit
         private System.Windows.Forms.ListBox lbxMessages;
         private System.Windows.Forms.OpenFileDialog ofdInputPAK;
         private System.Windows.Forms.Button btnStartWebServer;
+        private ToolStripMenuItem packetToolStripMenuItem;
+        private Button BtnLaunchChibiKart;
+        private ToolStripMenuItem ToolStripMenuItemInspectXML;
+        private Label label1;
+        private LinkLabel linkLabel1;
+        private Button btnServerSettings;
     }
 }

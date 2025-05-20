@@ -18,6 +18,8 @@ namespace ChibiKartToolkit
         public static void XorStringAndWriteToFile(string input, string outputPath)
         {
             StringBuilder result = new StringBuilder();
+
+            //  Convert the input string to a byte array
             byte[] inputBytes = Encoding.UTF8.GetBytes(input);
 
             for (int i = 0; i <= 255; i++)
@@ -26,11 +28,13 @@ namespace ChibiKartToolkit
                 {
                     byte[] xorBytes = new byte[inputBytes.Length];
 
+                    // XOR each byte in the array
                     for (int j = 0; j < inputBytes.Length; j++)
                     {
                         xorBytes[j] = (byte)(inputBytes[j] ^ (byte)i);
                     }
 
+                    // Convert the XORed byte array back to a string
                     string xorResult = Encoding.UTF8.GetString(xorBytes);
                     result.AppendLine($"XOR with {i:X2}: {xorResult}");
 
@@ -41,6 +45,7 @@ namespace ChibiKartToolkit
                 }
                 catch
                 {
+                    // Skip this XOR value if any error occurs
                     continue;
                 }
             }

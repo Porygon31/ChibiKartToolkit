@@ -1,19 +1,14 @@
-using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Windows.Forms;
-using System.Linq;
 using System.Xml.Linq;
-using static ChibiKartToolkit.Misc;
-using static ChibiKartToolkit.Extract;
 
 namespace ChibiKartToolkit
 {
     public partial class Form1 : Form
     {
+        private const string response = "responses.xml";
         private TcpListener listener;
         private Thread clientThread;
         private HttpListener httplistener;
@@ -43,19 +38,7 @@ namespace ChibiKartToolkit
             }
         }
 
-        private void PAKToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (ofdInputPAK.ShowDialog() == DialogResult.OK)
-            {
-                Extract.ExtractPAK(ofdInputPAK.FileName);
-            }
-        }
 
-        private void XORTestToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string inputString = "ly#u5";
-            Misc.XorStringAndWriteToFile(inputString, "OutputXOR.txt");
-        }
 
         private void btnStartServer_Click(object sender, EventArgs e)
         {
@@ -72,6 +55,8 @@ namespace ChibiKartToolkit
             {
                 listener = new TcpListener(IPAddress.Any, 50017);
                 listener.Start();
+
+                //Log that the server has started
                 Invoke(new Action(() => AddMessage("Server started and listening on port 50017")));
 
                 while (!_cts.Token.IsCancellationRequested)
@@ -91,90 +76,17 @@ namespace ChibiKartToolkit
                     }
                 }
             }
+            // Handle close of the app
             catch (OperationCanceledException)
             {
-                // Handle cancellation
+
                 Invoke(new Action(() => AddMessage("Server stopped due to cancellation request")));
             }
+            //Handle any exceptions that occur
             catch (Exception ex)
             {
                 Invoke(new Action(() => AddMessage("Server error: " + ex.Message)));
             }
-        }
-
-        private void LoadResponses()
-        {
-            responses = new Dictionary<string, byte[]>();
-            responses.Clear();
-
-            var xml = XDocument.Load("responses.xml");
-            foreach (var responseElement in xml.Descendants("Response"))
-            {
-                var trigger = responseElement.Element("Trigger").Value;
-                var data = responseElement.Element("Data").Value.Replace(" ", "");
-                var dataBytes = Enumerable.Range(0, data.Length / 2)
-                    .Select(i => Convert.ToByte(data.Substring(i * 2, 2), 16))
-                    .ToArray();
-                responses.Add(trigger, dataBytes);
-            }
-        }
-
-        private void HandleClient(TcpClient client, CancellationToken cancellationToken)
-        {
-            try
-            {
-                using (NetworkStream stream = client.GetStream())
-                {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    string request = BitConverter.ToString(buffer, 0, bytesRead).Replace("-", "");
-                    string requestPrefix = BitConverter.ToString(buffer, 0, 4).Replace("-", "");
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    Invoke(new Action(() => AddMessage("Received:    " + request)));
-                    LoadResponses();
-
-                    if (responses.TryGetValue(requestPrefix, out byte[] responseBytes))
-                    {
-                        stream.Write(responseBytes, 0, responseBytes.Length);
-                        string responseString = BitConverter.ToString(responseBytes).Replace("-", "");
-                        Invoke(new Action(() => AddMessage("Responded: " + responseString)));
-                    }
-                    else
-                    {
-                        byte[] response = buffer.Take(bytesRead).ToArray();
-                        stream.Write(response, 0, response.Length);
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Handle cancellation
-                Invoke(new Action(() => AddMessage("Client handler stopped due to cancellation request")));
-            }
-            catch (Exception ex)
-            {
-                Invoke(new Action(() => AddMessage("Client error: " + ex.Message)));
-            }
-            finally
-            {
-                client.Close();
-            }
-        }
-
-        private void AddMessage(string message)
-        {
-            lbxMessages.Items.Add(message);
-            lbxMessages.TopIndex = lbxMessages.Items.Count - 1;
-            lbxMessages.SelectedIndex = lbxMessages.Items.Count - 1;
-        }
-
-
-
-        private void DecryptStringToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Misc.DecryptNetworkini("ly#u5");
         }
 
         private void btnStartWebServer_Click(object sender, EventArgs e)
@@ -191,7 +103,6 @@ namespace ChibiKartToolkit
 
             Invoke(new Action(() => AddMessage("HTTP Server Started Listening at 127.0.0.1:80")));
         }
-
         private void HTTPListenForRequests()
         {
             while (!_cts.Token.IsCancellationRequested && httplistener.IsListening)
@@ -245,9 +156,130 @@ namespace ChibiKartToolkit
             }
         }
 
+        private void LoadResponses()
+        {
+            responses = new Dictionary<string, byte[]>();
+            responses.Clear();
+
+            XDocument xml = XDocument.Load(response);
+
+            foreach (var responseElement in xml.Descendants("Response"))
+            {
+                var trigger = responseElement.Element("Trigger").Value;
+                var data = responseElement.Element("Data").Value.Replace(" ", "");
+                var dataBytes = Enumerable.Range(0, data.Length / 2)
+                    .Select(i => Convert.ToByte(data.Substring(i * 2, 2), 16))
+                    .ToArray();
+                responses.Add(trigger, dataBytes);
+            }
+        }
+
+        private void HandleClient(TcpClient client, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using (NetworkStream stream = client.GetStream())
+                {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                    string request = BitConverter.ToString(buffer, 0, bytesRead).Replace("-", "");
+                    string requestPrefix = BitConverter.ToString(buffer, 0, 4).Replace("-", ""); //Convert the first 3 bytes of the request to a hex string
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    Invoke(new Action(() => AddMessage("Received:    " + request))); //Log the request to the ListView
+                    LoadResponses(); //Load responses from XML
+
+                    //Check if the incoming request starts with any trigger in the XML
+                    if (responses.TryGetValue(requestPrefix, out byte[] responseBytes))
+                    {
+                        //Respond with the bytes from the XML
+                        stream.Write(responseBytes, 0, responseBytes.Length);
+                        string responseString = BitConverter.ToString(responseBytes).Replace("-", "");
+                        Invoke(new Action(() => AddMessage("Responded: " + responseString)));
+                    }
+                    else
+                    {
+                        //Send the original request back to the client
+                        byte[] response = buffer.Take(bytesRead).ToArray();
+                        stream.Write(response, 0, response.Length);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Handle cancellation
+                Invoke(new Action(() => AddMessage("Client handler stopped due to cancellation request")));
+            }
+            catch (Exception ex)
+            {
+                Invoke(new Action(() => AddMessage("Client error: " + ex.Message)));
+            }
+            finally
+            {
+                client.Close();
+            }
+        }
+
+        private void AddMessage(string message)
+        {
+            lbxMessages.Items.Add(message);
+            lbxMessages.TopIndex = lbxMessages.Items.Count - 1;
+            lbxMessages.SelectedIndex = lbxMessages.Items.Count - 1;
+        }
+
+
+
+        private void DecryptStringToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Misc.DecryptNetworkini("ly#u5");
+        }
+
+        private void PAKToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ofdInputPAK.ShowDialog() == DialogResult.OK)
+            {
+                Extract.ExtractPAK(ofdInputPAK.FileName);
+            }
+        }
+
+        private void XORTestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string inputString = "ly#u5";
+            Misc.XorStringAndWriteToFile(inputString, "OutputXOR.txt");
+        }
+
+
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"Chibi Kart Toolkit and Server Emulator{Environment.NewLine}Tool Created by @yuviapp{Environment.NewLine}Ver:0.01");
+            MessageBox.Show($"Chibi Kart Toolkit{Environment.NewLine}" +
+                $"Our goal is to create a server emulator for Chibi Kart/Kart'n'Crazy{Environment.NewLine}" +
+                $"Forked by @Porygon31 on the Tool Created by @yuviapp{Environment.NewLine}{Environment.NewLine}Ver:0.02");
+        }
+
+        private void ToolStripMenuItemInspectXML_Click(object sender, EventArgs e)
+        {
+            Packet packetForm = new();
+            packetForm.Show();
+        }
+
+        private void BtnLaunchChibiKart_Click(object sender, EventArgs e)
+        {
+            const string FileName = "T:\\OGPlanet\\Chibi Kart\\KnC.exe";
+            Process process = Process.Start(FileName);
+            Invoke(new Action(() => AddMessage("")));
+        }
+
+        public void linkLabel1_ShowResponsesXML(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+
+
+        }
+
+        private void btnServerSettings_Click(object sender, EventArgs e)
+        {
+            ServerSettings serverSettingsForm = new();
+            serverSettingsForm.Show();
         }
     }
 }

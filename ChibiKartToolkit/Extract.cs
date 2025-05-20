@@ -11,10 +11,11 @@ namespace ChibiKartToolkit
         {
             int extractFileCount = 0;
 
-            using (BinaryReader br = new BinaryReader(File.Open(inputpak, FileMode.Open)))
+            using (BinaryReader binReader = new BinaryReader(File.Open(inputpak, FileMode.Open)))
             {
+                // Get Signature and check
                 string correctSignature = "NKZIP";
-                string fileSignature = Encoding.UTF8.GetString(br.ReadBytes(5));
+                string fileSignature = Encoding.UTF8.GetString(binReader.ReadBytes(5));
                 if (fileSignature != correctSignature)
                 {
                     MessageBox.Show("Incorrect PAK File");
@@ -22,34 +23,39 @@ namespace ChibiKartToolkit
                 }
 
                 // Move to file count
-                br.BaseStream.Position = 0x24;
-                uint fileCount = br.ReadUInt32();
+                binReader.BaseStream.Position = 0x24;
+                uint fileCount = binReader.ReadUInt32();
 
                 for (int i = 0; i < fileCount; i++)
                 {
-                    long startOfFileData = br.BaseStream.Position + 0x108;
+                    // Calculate Start of Data
+                    long startOfFileData = binReader.BaseStream.Position + 0x108;
 
-                    int fileLength = br.ReadInt32();
+                    // Loop Getting Files
+                    int fileLength = binReader.ReadInt32();
 
+                    // Get FileNameDir Which we need to Save POS to return to
                     int charCount = 0;
                     string fileNameDir = "";
-                    long startOfFileName = br.BaseStream.Position;
+                    long startOfFileName = binReader.BaseStream.Position;
 
-                    while (br.ReadByte() != 0)
+                    while (binReader.ReadByte() != 0)
                         charCount++;
 
-                    br.BaseStream.Position = startOfFileName;
-                    fileNameDir = Encoding.UTF8.GetString(br.ReadBytes(charCount));
+                    binReader.BaseStream.Position = startOfFileName;
+                    fileNameDir = Encoding.UTF8.GetString(binReader.ReadBytes(charCount));
 
                     string extractedFilename = Path.GetFileName(fileNameDir);
                     string extractedDIR = Path.GetDirectoryName(fileNameDir).Replace("./", "");
 
+                    // Create Directory if needed
                     string exportDir = Path.Combine("Export", Path.GetFileNameWithoutExtension(inputpak), extractedDIR);
                     if (!Directory.Exists(exportDir))
                         Directory.CreateDirectory(exportDir);
 
-                    br.BaseStream.Position = startOfFileData;
-                    byte[] fileData = br.ReadBytes(fileLength);
+                    // Now get the Data
+                    binReader.BaseStream.Position = startOfFileData;
+                    byte[] fileData = binReader.ReadBytes(fileLength);
                     File.WriteAllBytes(Path.Combine(exportDir, extractedFilename), fileData);
 
                     extractFileCount++;
