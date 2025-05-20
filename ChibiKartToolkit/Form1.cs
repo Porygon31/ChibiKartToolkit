@@ -174,6 +174,27 @@ namespace ChibiKartToolkit
             }
         }
 
+        private byte[] DispatchPacket(byte[] data)
+        {
+            if (data.Length < 3)
+                return null;
+
+            byte cmd = data[2]; // 3rd byte = Command
+            switch (cmd)
+            {
+                case 0xA6: // Login Request
+                    return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                case 0x0F: // Show Garage
+                    return new byte[] { 0x04, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                case 0x11: // Show Menu
+                    return new byte[] { 0x04, 0x00, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                case 0x12: // Lobby OK
+                    return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                default:
+                    return null;
+            }
+        }
+
         private void HandleClient(TcpClient client, CancellationToken cancellationToken)
         {
             try
@@ -181,34 +202,39 @@ namespace ChibiKartToolkit
                 using (NetworkStream stream = client.GetStream())
                 {
                     byte[] buffer = new byte[1024];
-                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    string request = BitConverter.ToString(buffer, 0, bytesRead).Replace("-", "");
-                    string requestPrefix = BitConverter.ToString(buffer, 0, 4).Replace("-", ""); //Convert the first 3 bytes of the request to a hex string
 
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    Invoke(new Action(() => AddMessage("Received:    " + request))); //Log the request to the ListView
-                    LoadResponses(); //Load responses from XML
-
-                    //Check if the incoming request starts with any trigger in the XML
-                    if (responses.TryGetValue(requestPrefix, out byte[] responseBytes))
+                    while (client.Connected && !cancellationToken.IsCancellationRequested)
                     {
-                        //Respond with the bytes from the XML
-                        stream.Write(responseBytes, 0, responseBytes.Length);
-                        string responseString = BitConverter.ToString(responseBytes).Replace("-", "");
-                        Invoke(new Action(() => AddMessage("Responded: " + responseString)));
-                    }
-                    else
-                    {
-                        //Send the original request back to the client
-                        byte[] response = buffer.Take(bytesRead).ToArray();
-                        stream.Write(response, 0, response.Length);
+                        if (!stream.DataAvailable)
+                        {
+                            Thread.Sleep(10);
+                            continue;
+                        }
+
+                        int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                        if (bytesRead == 0) break;
+
+                        byte[] receivedPacket = buffer.Take(bytesRead).ToArray();
+                        string hexRequest = BitConverter.ToString(receivedPacket).Replace("-", " ");
+                        Invoke(new Action(() => AddMessage("[>] Received:  " + hexRequest)));
+
+                        byte[] response = DispatchPacket(receivedPacket);
+                        if (response != null)
+                        {
+                            stream.Write(response, 0, response.Length);
+                            string hexResponse = BitConverter.ToString(response).Replace("-", " ");
+                            Invoke(new Action(() => AddMessage("[<] Responded: " + hexResponse)));
+                        }
+                        else
+                        {
+                            Invoke(new Action(() => AddMessage("[!] Unknown CMD: 0x" +
+                                (receivedPacket.Length > 2 ? receivedPacket[2].ToString("X2") : "??"))));
+                        }
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                // Handle cancellation
                 Invoke(new Action(() => AddMessage("Client handler stopped due to cancellation request")));
             }
             catch (Exception ex)
@@ -218,6 +244,7 @@ namespace ChibiKartToolkit
             finally
             {
                 client.Close();
+                Invoke(new Action(() => AddMessage("[-] Client disconnected")));
             }
         }
 
@@ -228,7 +255,30 @@ namespace ChibiKartToolkit
             lbxMessages.SelectedIndex = lbxMessages.Items.Count - 1;
         }
 
+        // Gestionnaire du clic sur le bouton "Enregistrer les messages"
+        private void btnSaveMessages_Click(object sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "Fichiers texte (*.txt)|*.txt|Tous les fichiers (*.*)|*.*";
+                saveFileDialog.Title = "Enregistrer les messages";
+                saveFileDialog.FileName = "messages.txt";
 
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        var lines = lbxMessages.Items.Cast<object>().Select(item => item.ToString());
+                        System.IO.File.WriteAllLines(saveFileDialog.FileName, lines, Encoding.UTF8);
+                        MessageBox.Show("Messages enregistrés avec succès.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Erreur lors de l'enregistrement : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
 
         private void DecryptStringToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -282,4 +332,5 @@ namespace ChibiKartToolkit
             serverSettingsForm.Show();
         }
     }
+
 }
