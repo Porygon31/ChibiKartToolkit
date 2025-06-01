@@ -186,10 +186,10 @@ namespace ChibiKartToolkit
                     return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                 case 0x0F: // Show Garage
                     return new byte[] { 0x04, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                case 0x11: // Show Menu
-                    return new byte[] { 0x04, 0x00, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                case 0x12: // Lobby OK
-                    return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                //case 0x11: // Show Menu
+                //    return new byte[] { 0x04, 0x00, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                //case 0x12: // Lobby OK
+                //    return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                 default:
                     return null;
             }
@@ -262,7 +262,7 @@ namespace ChibiKartToolkit
             {
                 saveFileDialog.Filter = "Fichiers texte (*.txt)|*.txt|Tous les fichiers (*.*)|*.*";
                 saveFileDialog.Title = "Enregistrer les messages";
-                saveFileDialog.FileName = "messages.txt";
+                saveFileDialog.FileName = $"messages_{DateTime.Now:dd_MM_HH_mm_ss}.txt";
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -323,7 +323,8 @@ namespace ChibiKartToolkit
         public void linkLabel1_ShowResponsesXML(object sender, LinkLabelLinkClickedEventArgs e)
         {
 
-
+            ResponsesEditor responsesEditor = new ResponsesEditor();
+            responsesEditor.Show();
         }
 
         private void btnServerSettings_Click(object sender, EventArgs e)

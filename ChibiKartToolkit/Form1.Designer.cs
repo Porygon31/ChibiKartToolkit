@@ -181,10 +181,10 @@ namespace ChibiKartToolkit
             linkLabel1.AutoSize = true;
             linkLabel1.Location = new Point(16, 68);
             linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(117, 15);
+            linkLabel1.Size = new Size(142, 15);
             linkLabel1.TabIndex = 6;
             linkLabel1.TabStop = true;
-            linkLabel1.Text = "Show Responses.xml";
+            linkLabel1.Text = "Show/Edit Responses.xml";
             linkLabel1.LinkClicked += linkLabel1_ShowResponsesXML;
             // 
             // btnServerSettings
