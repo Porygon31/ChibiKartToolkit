@@ -41,6 +41,7 @@ namespace ChibiKartToolkit
             linkLabel1 = new LinkLabel();
             btnServerSettings = new Button();
             btnSaveMessages = new Button();
+            txtDecode = new TextBox();
             MenuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -49,7 +50,7 @@ namespace ChibiKartToolkit
             MenuStrip1.Items.AddRange(new ToolStripItem[] { FileToolStripMenuItem, ExportToolStripMenuItem, ImportToolStripMenuItem, MiscToolStripMenuItem, packetToolStripMenuItem });
             MenuStrip1.Location = new Point(0, 0);
             MenuStrip1.Name = "MenuStrip1";
-            MenuStrip1.Size = new Size(1090, 24);
+            MenuStrip1.Size = new Size(1502, 24);
             MenuStrip1.TabIndex = 0;
             MenuStrip1.Text = "menuStrip1";
             // 
@@ -140,6 +141,7 @@ namespace ChibiKartToolkit
             lbxMessages.Name = "lbxMessages";
             lbxMessages.Size = new Size(1027, 409);
             lbxMessages.TabIndex = 2;
+            lbxMessages.SelectedIndexChanged += lbxMessages_SelectedIndexChanged;
             // 
             // ofdInputPAK
             // 
@@ -195,7 +197,7 @@ namespace ChibiKartToolkit
             btnServerSettings.TabIndex = 7;
             btnServerSettings.Text = "Server Settings";
             btnServerSettings.UseVisualStyleBackColor = true;
-            btnServerSettings.Click += btnServerSettings_Click;
+            //btnServerSettings.Click += btnServerSettings_Click;
             // 
             // btnSaveMessages
             // 
@@ -207,11 +209,20 @@ namespace ChibiKartToolkit
             btnSaveMessages.UseVisualStyleBackColor = true;
             btnSaveMessages.Click += btnSaveMessages_Click;
             // 
+            // txtDecode
+            // 
+            txtDecode.Location = new Point(1122, 86);
+            txtDecode.Multiline = true;
+            txtDecode.Name = "txtDecode";
+            txtDecode.Size = new Size(331, 392);
+            txtDecode.TabIndex = 9;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1090, 575);
+            ClientSize = new Size(1502, 575);
+            Controls.Add(txtDecode);
             Controls.Add(btnSaveMessages);
             Controls.Add(btnServerSettings);
             Controls.Add(linkLabel1);
@@ -253,5 +264,6 @@ namespace ChibiKartToolkit
         private LinkLabel linkLabel1;
         private Button btnServerSettings;
         private Button btnSaveMessages;
+        private TextBox txtDecode;
     }
 }
