@@ -1,7 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace ChibiKartToolkit
@@ -63,6 +64,7 @@ namespace ChibiKartToolkit
                 {
                     if (listener.Pending())
                     {
+                        LoadResponses();
                         TcpClient client = listener.AcceptTcpClient();
                         Thread clientHandlerThread = new Thread(() => HandleClient(client, _cts.Token))
                         {
@@ -179,21 +181,32 @@ namespace ChibiKartToolkit
             if (data.Length < 3)
                 return null;
 
-            byte cmd = data[2]; // 3rd byte = Command
+            byte cmd = data[3]; // 3rd byte = Command
             switch (cmd)
             {
                 case 0xA6: // Login Request
                     return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                 case 0x0F: // Show Garage
                     return new byte[] { 0x04, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                //case 0x11: // Show Menu
-                //    return new byte[] { 0x04, 0x00, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                //case 0x12: // Lobby OK
-                //    return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                case 0x11: // Show Menu
+                    return new byte[] { 0x04, 0x00, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                case 0x12: // Lobby OK
+                    return new byte[] { 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                 default:
                     return null;
             }
         }
+
+        private string ToAsciiColumn(byte[] data)
+        {
+            var sb = new StringBuilder();
+            foreach (byte b in data)
+            {
+                sb.Append((b >= 32 && b <= 126) ? (char)b : '.');
+            }
+            return sb.ToString();
+        }
+
 
         private void HandleClient(TcpClient client, CancellationToken cancellationToken)
         {
@@ -216,14 +229,16 @@ namespace ChibiKartToolkit
 
                         byte[] receivedPacket = buffer.Take(bytesRead).ToArray();
                         string hexRequest = BitConverter.ToString(receivedPacket).Replace("-", " ");
-                        Invoke(new Action(() => AddMessage("[>] Received:  " + hexRequest)));
+                        string asciiRequest = ToAsciiColumn(receivedPacket);
+                        Invoke(new Action(() => AddMessage($"[>] Received: {hexRequest.PadRight(48)} {asciiRequest}")));
 
                         byte[] response = DispatchPacket(receivedPacket);
                         if (response != null)
                         {
                             stream.Write(response, 0, response.Length);
                             string hexResponse = BitConverter.ToString(response).Replace("-", " ");
-                            Invoke(new Action(() => AddMessage("[<] Responded: " + hexResponse)));
+                            string asciiResponse = ToAsciiColumn(response);
+                            Invoke(new Action(() => AddMessage($"[<] Responded: {hexResponse.PadRight(48)} {asciiResponse}")));
                         }
                         else
                         {
@@ -250,9 +265,10 @@ namespace ChibiKartToolkit
 
         private void AddMessage(string message)
         {
-            lbxMessages.Items.Add(message);
+            string timestamp = DateTime.Now.ToString("HH:mm:ss");
+            lbxMessages.Items.Add($"[{timestamp}] {message}");
             lbxMessages.TopIndex = lbxMessages.Items.Count - 1;
-            lbxMessages.SelectedIndex = lbxMessages.Items.Count - 1;
+           // lbxMessages.SelectedIndex = lbxMessages.Items.Count - 1;
         }
 
         // Gestionnaire du clic sur le bouton "Enregistrer les messages"
@@ -270,7 +286,7 @@ namespace ChibiKartToolkit
                     {
                         var lines = lbxMessages.Items.Cast<object>().Select(item => item.ToString());
                         System.IO.File.WriteAllLines(saveFileDialog.FileName, lines, Encoding.UTF8);
-                        MessageBox.Show("Messages enregistr�s avec succ�s.", "Succ�s", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Messages enregistrés avec succès.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
@@ -278,6 +294,48 @@ namespace ChibiKartToolkit
                     }
                 }
             }
+        }
+
+        private string DecodeLogMessage(string logLine)
+        {
+            // Retire [HH:mm:ss] au début si présent
+            logLine = System.Text.RegularExpressions.Regex.Replace(logLine, @"^\[\d{2}:\d{2}:\d{2}\]\s*", "");
+
+            // Recherche une séquence hexadécimale dans le message
+            var match = System.Text.RegularExpressions.Regex.Match(logLine, @"([0-9A-F]{2}(?: [0-9A-F]{2})+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            if (!match.Success)
+                return "Aucune séquence hex détectée dans ce message.";
+
+            string hexPart = match.Groups[1].Value;
+            var hexBytes = hexPart.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => Convert.ToByte(s, 16))
+                .ToArray();
+
+            // ASCII conversion
+            var ascii = new StringBuilder();
+            foreach (var b in hexBytes)
+                ascii.Append((b >= 32 && b <= 126) ? (char)b : '.');
+
+            // Détection texte lisible (suite de 4+ caractères imprimables)
+            string asciiString = ascii.ToString();
+            var readableMatches = System.Text.RegularExpressions.Regex.Matches(asciiString, @"[ -~]{4,}");
+            var readableList = readableMatches.Cast<Match>().Select(m => m.Value).ToList();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("⎯⎯⎯ Dump hexadécimal ⎯⎯⎯");
+            sb.AppendLine(hexPart);
+            sb.AppendLine();
+            sb.AppendLine("⎯⎯⎯ ASCII ⎯⎯⎯");
+            sb.AppendLine(asciiString);
+            if (readableList.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine("⎯⎯⎯ Texte lisible trouvé ⎯⎯⎯");
+                foreach (var val in readableList)
+                    sb.AppendLine(val);
+            }
+            return sb.ToString();
         }
 
         private void DecryptStringToolStripMenuItem_Click(object sender, EventArgs e)
@@ -327,11 +385,30 @@ namespace ChibiKartToolkit
             responsesEditor.Show();
         }
 
-        private void btnServerSettings_Click(object sender, EventArgs e)
+        //private void btnServerSettings_Click(object sender, EventArgs e)
+        //{
+        //    ServerSettings serverSettingsForm = new();
+        //    serverSettingsForm.Show();
+        //}
+
+        private void lbxMessages_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ServerSettings serverSettingsForm = new();
-            serverSettingsForm.Show();
+            if (lbxMessages.SelectedItem == null)
+                return;
+
+            string? message = lbxMessages.SelectedItem?.ToString();
+            if (message == null)
+                return;
+
+            string decode = DecodeLogMessage(message);
+
+            // Affiche dans une MessageBox (ou un TextBox dédié, si tu préfères)
+            //MessageBox.Show(decode, "Décodage du message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // OU (recommandé) : affiche dans un TextBox multiline (ajoute-en un, appelle-le txtDecode par ex)
+             txtDecode.Text = decode;
         }
+
     }
 
 }
